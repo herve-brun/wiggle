@@ -10,7 +10,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import Cursor from './cursor.js';
 
-export class BaseEffect extends St.Actor {
+export class BaseEffect extends St.Widget {
     static {
         GObject.registerClass(this);
     }
@@ -145,11 +145,12 @@ export class FindMouseEffect extends BaseEffect {
 
         // Create the halo using a circular shape
         // The actor itself will be the halo
-        this.set_content(new St.Widget({
+        this._halo = new St.Widget({
             width: this.haloRadius * 2,
             height: this.haloRadius * 2,
             style: `background-color: ${this.haloColor}; opacity: ${this.haloOpacity}; border-radius: 100%;`
-        }));
+        });
+        this.add_child(this._halo);
     }
 
     move(x, y) {
@@ -192,7 +193,7 @@ export class SpotlightEffect extends BaseEffect {
             style_class: 'spotlight-effect',
             style: `background: radial-gradient(circle, ${this.spotlightColor} ${this.spotlightOpacity}, rgba(0,0,0,0) 70%); border-radius: 50%;`
         });
-        this.set_content(this._spotlightActor);
+        this.add_child(this._spotlightActor);
     }
 
     set spotlightColor(color) {
@@ -277,7 +278,7 @@ export class LaserPointerEffect extends BaseEffect {
             style_class: 'laser-pointer',
             style: `background-color: ${this.laserColor}; border-radius: 2px;`
         });
-        this.set_content(this._laserActor);
+        this.add_child(this._laserActor);
     }
 
     set laserColor(color) {
@@ -444,7 +445,7 @@ export class ArrowGuideEffect extends BaseEffect {
             style_class: 'arrow-guide',
             style: `background-color: ${this.arrowColor}; clip-path: polygon(0% 50%, 100% 0%, 100% 100%);`
         });
-        this.set_content(this._arrowActor);
+        this.add_child(this._arrowActor);
     }
 
     set arrowColor(color) {

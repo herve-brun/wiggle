@@ -112,10 +112,44 @@ export default class WiggleExtension extends Extension {
         }
     }
 
+    _reapplySettings() {
+        const settings = this._settings;
+        const effect = this._effect;
+        
+        // Reapply all effect-related settings
+        if (effect instanceof MagnificationEffect) {
+            effect.cursorSize = settings.get_int(Field.SIZE);
+            effect.cursorPath = settings.get_string(Field.PATH);
+            effect.magnifyDuration = settings.get_int(Field.MAGN);
+            effect.unmagnifyDuration = settings.get_int(Field.UMGN);
+            effect.unmagnifyDelay = settings.get_int(Field.DLAY);
+        } else if (effect instanceof FindMouseEffect) {
+            effect.haloColor = settings.get_string(Field.HALO_COLOR);
+            effect.haloRadius = settings.get_int(Field.HALO_RADIUS);
+            effect.haloOpacity = settings.get_double(Field.HALO_OPACITY);
+        } else if (effect instanceof SpotlightEffect) {
+            effect.spotlightColor = settings.get_string(Field.SPOTLIGHT_COLOR);
+            effect.spotlightSize = settings.get_int(Field.SPOTLIGHT_SIZE);
+            effect.spotlightOpacity = settings.get_double(Field.SPOTLIGHT_OPACITY);
+        } else if (effect instanceof LaserPointerEffect) {
+            effect.laserColor = settings.get_string(Field.LASER_COLOR);
+            effect.laserThickness = settings.get_int(Field.LASER_THICKNESS);
+            effect.laserLength = settings.get_int(Field.LASER_LENGTH);
+        } else if (effect instanceof TrailEffect) {
+            effect.trailColor = settings.get_string(Field.TRAIL_COLOR);
+            effect.trailLength = settings.get_int(Field.TRAIL_LENGTH);
+            effect.fadeDuration = settings.get_int(Field.TRAIL_FADE);
+        } else if (effect instanceof ArrowGuideEffect) {
+            effect.arrowColor = settings.get_string(Field.ARROW_COLOR);
+            effect.arrowSize = settings.get_int(Field.ARROW_SIZE);
+        }
+    }
+
     enable() {
         this._pointerWatcher = getPointerWatcher();
         this._history = new History();
         
+        this._settings = this.getSettings();
         const mode = this._settings.get_string(Field.MODE);
         this._effect =
             mode === 'find-mouse' ? new FindMouseEffect() :
@@ -125,7 +159,7 @@ export default class WiggleExtension extends Extension {
             mode === 'arrow-guide' ? new ArrowGuideEffect() :
             new MagnificationEffect();
         
-        this._settings = this.getSettings();
+        this._reapplySettings();
 
         // Handle keypress trigger if configured
         if (this._settings.get_string(Field.TRIGGER) === 'keypress') {
@@ -148,23 +182,25 @@ export default class WiggleExtension extends Extension {
             [Field.DRAW, 'i', (r) => this._onDrawIntervalChange(r)],
 
             // New settings
-            [Field.MODE, 's', (r) => {
-                this._effect.destroy();
-                this._effect =
-                    r === 'find-mouse' ? new FindMouseEffect() :
-                    r === 'spotlight' ? new SpotlightEffect() :
-                    r === 'laser-pointer' ? new LaserPointerEffect() :
-                    r === 'trail' ? new TrailEffect() :
-                    r === 'arrow-guide' ? new ArrowGuideEffect() :
-                    new MagnificationEffect();
-            }],
+        [Field.MODE, 's', (r) => {
+            this._effect.destroy();
+            this._effect =
+                r === 'find-mouse' ? new FindMouseEffect() :
+                r === 'spotlight' ? new SpotlightEffect() :
+                r === 'laser-pointer' ? new LaserPointerEffect() :
+                r === 'trail' ? new TrailEffect() :
+                r === 'arrow-guide' ? new ArrowGuideEffect() :
+                new MagnificationEffect();
+            // Reapply all current settings to the new effect
+            this._reapplySettings();
+        }],
             [Field.TRIGGER, 's', (r) => {
                 // Logic to switch between motion and keypress monitoring
             }],
             [Field.T_KEY, 's', (r) => {}],
-            [Field.HALO_COLOR, 's', (r) => { if(this._effect instanceof FindMouseEffect) this._effect.haloColor = r; this._effect.get_content().set_style(`background-color: ${r}; opacity: ${this._effect.haloOpacity}; border-radius: 100%;`) }],
-            [Field.HALO_RADIUS, 'i', (r) => { if(this._effect instanceof FindMouseEffect) { this._effect.haloRadius = r; this._effect.get_content().set_size(r*2, r*2); } }],
-            [Field.HALO_OPACITY, 'd', (r) => { if(this._effect instanceof FindMouseEffect) { this._effect.haloOpacity = r; this._effect.get_content().set_style(`background-color: ${this._effect.haloColor}; opacity: ${r}; border-radius: 100%;`) } }],
+            [Field.HALO_COLOR, 's', (r) => { if(this._effect instanceof FindMouseEffect) { this._effect.haloColor = r; if (this._effect._halo) { this._effect._halo.set_style(`background-color: ${r}; opacity: ${this._effect.haloOpacity}; border-radius: 100%;`); } } }],
+            [Field.HALO_RADIUS, 'i', (r) => { if(this._effect instanceof FindMouseEffect) { this._effect.haloRadius = r; if (this._effect._halo) { this._effect._halo.set_size(r*2, r*2); } } }],
+            [Field.HALO_OPACITY, 'd', (r) => { if(this._effect instanceof FindMouseEffect) { this._effect.haloOpacity = r; if (this._effect._halo) { this._effect._halo.set_style(`background-color: ${this._effect.haloColor}; opacity: ${r}; border-radius: 100%;`); } } }],
 
             // Spotlight Effect Settings
             [Field.SPOTLIGHT_COLOR, 's', (r) => { if(this._effect instanceof SpotlightEffect) this._effect.spotlightColor = r; }],
