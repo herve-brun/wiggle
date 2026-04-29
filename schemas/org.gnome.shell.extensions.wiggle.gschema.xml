@@ -34,5 +34,23 @@
     <key name="draw-interval" type="i">
       <default>8</default>
     </key>
+    <key name="effect-mode" type="s">
+      <default>'magnification'</default>
+    </key>
+    <key name="trigger-type" type="s">
+      <default>'motion'</default>
+    </key>
+    <key name="trigger-key" type="s">
+      <default>'Control'</default>
+    </key>
+    <key name="halo-color" type="s">
+      <default>'#ffffff'</default>
+    </key>
+    <key name="halo-radius" type="i">
+      <default>50</default>
+    </key>
+    <key name="halo-opacity" type="d">
+      <default>0.5</default>
+    </key>
   </schema>
 </schemalist>

@@ -26,6 +26,16 @@ const nSwitch = (title, subtitle) => new Adw.SwitchRow({
     subtitle: _(subtitle),
 });
 
+const nCombo = (title, subtitle, options) => {
+    const model = new Gtk.StringList(null);
+    options.forEach(opt => model.append(opt));
+    return new Adw.ComboRow({
+        title: _(title),
+        subtitle: _(subtitle),
+        model,
+    });
+};
+
 class PrefGroup extends Adw.PreferencesGroup {
     static {
         GObject.registerClass(this);
@@ -104,10 +114,27 @@ export default class WigglePreferences extends ExtensionPreferences {
             ]),
         ]);
 
+        const _effectPage = new PrefPage('Effect Mode', 'org.gnome.Settings-power', [
+            new PrefGroup('Mode Settings', 'Choose between different cursor highlighting modes.', [
+                [Field.MODE, nCombo('Effect Mode', 'Select the type of effect to use when triggered.', ['magnification', 'find-mouse'])],
+            ]),
+            new PrefGroup('Trigger Settings', 'Configure how the effect is activated.', [
+                [Field.TRIGGER, nCombo('Trigger Type', 'Choose whether motion or keypress activates the effect.', ['motion', 'keypress'])],
+                [Field.T_KEY, nEntry('Trigger Key', 'Specify the key to press (e.g., "Control" for Ctrl).')],
+            ]),
+            new PrefGroup('Halo Settings', 'Configure the appearance of the Find My Mouse halo.', [
+                [Field.HALO_COLOR, nEntry('Halo Color', 'Color of the highlight (hex format, e.g., #ffffff).')],
+                [Field.HALO_RADIUS, nSpin('Halo Radius', 'Size of the highlight area in pixels.', 10, 256, 1)],
+                [Field.HALO_OPACITY, nSpin('Halo Opacity', 'Transparency level (0.0 to 1.0).', 0.0, 1.0, 0.05)],
+            ]),
+        ]);
+
         _appearancePage.bind(_settings);
         _behaviorPage.bind(_settings);
+        _effectPage.bind(_settings);
 
         window.add(_appearancePage);
         window.add(_behaviorPage);
+        window.add(_effectPage);
     }
 }
