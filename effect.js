@@ -125,6 +125,10 @@ export class MagnificationEffect extends BaseEffect {
         if (this._unmagnifyDelayId) {
             GLib.Source.remove(this._unmagnifyDelayId);
         }
+        if (this.cursor) {
+            this.cursor.destroy();
+            this.cursor = null;
+        }
     }
 }
 

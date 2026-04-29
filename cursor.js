@@ -1,10 +1,11 @@
 'use strict';
 
 import Clutter from 'gi://Clutter';
+import Meta from 'gi://Meta';
 
 export default class Cursor {
     constructor() {
-        this._tracker = global.backend.get_cursor_tracker(global.display);
+        this._tracker = Meta.CursorTracker.get_for_display(global.display);
     }
 
     get hot() {
@@ -43,5 +44,12 @@ export default class Cursor {
             },
             this
         );
+    }
+
+    destroy() {
+        if (this._tracker) {
+            this._tracker.disconnectObject(this);
+            this._tracker = null;
+        }
     }
 }
